@@ -30,6 +30,7 @@ private:
 
 	std::vector<LightSource*> lightSources;
 	std::vector<Shape*> shapes;
+	Vec3f backgroundColour;
 
 };
 

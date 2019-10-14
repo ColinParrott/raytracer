@@ -9,13 +9,14 @@
 
 #include "core/Shape.h"
 
-namespace rt{
+namespace rt {
 
-class Triangle: public Shape{
+    class Triangle : public Shape {
 
 
-};
-
+    private:
+        Vec3f vertices[3];
+    };
 
 
 } //namespace rt
