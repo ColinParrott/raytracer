@@ -1,0 +1,1 @@
+A ray tracer implementation in C++ for the Computer Graphics course at the University of Edinburgh 2019.
