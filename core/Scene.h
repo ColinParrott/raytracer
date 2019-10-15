@@ -23,15 +23,39 @@ public:
 
 	Scene(){};
 
+	~Scene(){
+	    for(auto l : lightSources){
+	        delete l;
+	    }
+
+	    for(auto s : shapes){
+	        delete s;
+	    }
+	}
+
 	void createScene(Value& scenespecs);
 
 
+    std::vector<Shape*> shapes;
+    Vec3f backgroundColour;
+    std::vector<LightSource*> lightSources;
 private:
 
-	std::vector<LightSource*> lightSources;
-	std::vector<Shape*> shapes;
-	Vec3f backgroundColour;
 
+
+    void populateVector3(const Value &a, Vec3f &vec);
+
+    void populateLightSources(const Value &value);
+
+    Vec3f populateVector3(const Value &a);
+
+    void populateShapes(const Value &value);
+
+    void assertSphere(const Value &sphere);
+
+    void assertMaterial(const Value &material);
+
+    Material populateMaterial(const Value &material);
 };
 
 } //namespace rt

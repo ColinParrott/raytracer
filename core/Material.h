@@ -13,6 +13,10 @@ namespace rt{
 class Material{
 public:
 
+    Material(float kd, float ks, int specularExponent, const Vec3f &diffuseColour) : kd(kd), ks(ks),
+                                                                                     specularExponent(specularExponent),
+                                                                                     diffuseColour(diffuseColour) {}
+
 
 private:
     float kd = 0.0f;

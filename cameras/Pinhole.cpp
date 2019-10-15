@@ -16,7 +16,6 @@ namespace rt{
 	//
 	Pinhole::Pinhole(int width, int height, int fov):Camera(width, height, fov){
 
-
 		// to fill
 
 	}

@@ -9,8 +9,8 @@
 namespace rt{
 
 
+    Shape::Shape() = default;
 
-
-
+    Shape::~Shape() = default;
 } //namespace rt
 

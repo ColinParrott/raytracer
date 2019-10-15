@@ -5,12 +5,14 @@
 
 #include <iostream>
 #include <fstream>
+#include <shapes/Sphere.h>
 
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 
 #include "math/geometry.h"
 #include "parsers/PPMWriter.h"
+#include "typeinfo"
 
 #include "core/RayTracer.h"
 #include "core/Camera.h"
@@ -43,29 +45,35 @@ int main(int argc, char* argv[]){
 	//generate the scene according to the input file
 	Scene* scene=new Scene();
 	scene->createScene(d["scene"]);
+	std::cout << "background colour: " << scene->backgroundColour << std::endl;
+    std::cout << "num lights: " << scene->lightSources.size() << std::endl;
+    std::cout << "num shapes: " << scene->shapes.size() << std::endl;
+
+    for(Shape *s : scene->shapes){
+        Sphere *sphere = (Sphere*) s;
+        std::cout << sphere->toString() << std::endl;
+    }
 
 	//
 	// Main function, render scene
 	//
-	Vec3f* pixelbuffer=RayTracer::render(camera, scene, d["nbounces"].GetInt());
+//	Vec3f* pixelbuffer=RayTracer::render(camera, scene, d["nbounces"].GetInt());
+//
+//
+//	//convert linear RGB pixel values [0-1] to range 0-255
+//	RayTracer::tonemap(pixelbuffer);
+//
+//
+//	std::printf("Output file: %s\n",outputFile);
+//
+//
+//	//write rendered scene to file (pixels RGB values must be in range 0255)
+//	PPMWriter::PPMWriter(camera->getWidth(), camera->getHeight(), pixelbuffer, outputFile);
 
-
-	//free resources when rendering is finished
-	delete camera;
-	delete scene;
-
-
-	//convert linear RGB pixel values [0-1] to range 0-255
-	RayTracer::tonemap(pixelbuffer);
-
-
-	std::printf("Output file: %s\n",outputFile);
-
-	//write rendered scene to file (pixels RGB values must be in range 0255)
-	PPMWriter::PPMWriter(camera->getWidth(), camera->getHeight(), pixelbuffer, outputFile);
-
-
-	delete pixelbuffer;
+    //free resources when rendering is finished
+    delete camera;
+    delete scene;
+//	delete pixelbuffer;
 }
 
 

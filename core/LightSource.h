@@ -13,13 +13,16 @@ namespace rt{
 
 class LightSource{
 public:
+    LightSource(const Vec3f &position, const Vec3f &intensity);
 
+    LightSource();
 
-private:
+public:
 
     Vec3f position;
     Vec3f intensity;
 };
+
 
 } //namespace rt
 

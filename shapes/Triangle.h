@@ -12,6 +12,10 @@
 namespace rt {
 
     class Triangle : public Shape {
+    public:
+        ~Triangle() override;
+
+        Hit intersect(Ray ray) override;
 
 
     private:

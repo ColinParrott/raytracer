@@ -8,7 +8,6 @@ include_directories(
 parsers
 math)
 
-
 file (GLOB rapidjson_headers
 parsers/rapidjson/*.h
 )
