@@ -8,7 +8,9 @@
 
 namespace rt{
 
-    Sphere::~Sphere() = default;
+    Sphere::~Sphere(){
+        delete material;
+    }
 
 	/**
 	 * Computes whether a ray hit the specific instance of a sphere shape and returns the hit data

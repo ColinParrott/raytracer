@@ -31,6 +31,7 @@ public:
 	    for(auto s : shapes){
 	        delete s;
 	    }
+
 	}
 
 	void createScene(Value& scenespecs);
@@ -55,7 +56,7 @@ private:
 
     void assertMaterial(const Value &material);
 
-    Material populateMaterial(const Value &material);
+    Material * populateMaterial(const Value &material);
 };
 
 } //namespace rt

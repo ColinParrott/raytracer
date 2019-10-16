@@ -33,12 +33,14 @@ namespace rt {
                 float u = float(x) / float(camera->getWidth());
                 float v = float(y) / float(camera->getHeight());
                 Ray ray = Ray(origin, lowerLeftCorner + u*horizontal + v*vertical, PRIMARY);
-                Shape *sphere = scene->shapes[0];
-                std::cout << scene->backgroundColour << std::endl;
-                if(sphere->intersect(ray).collided)
-                    *pixel = Vec3f(255.0f, 0.0f, 0.0f);
-                else
-                    *pixel = Vec3f(0.0f, 255.0f, 0.0f);
+                for(Shape * shape : scene->shapes)
+                {
+                    if(shape->intersect(ray).collided)
+                        *pixel = shape->getMaterial()->getDiffuseColour();
+                    else
+                        *pixel = scene->backgroundColour;
+                }
+
             }
         }
 
@@ -53,17 +55,25 @@ namespace rt {
  *
  * @return the tonemapped image
  */
-    Vec3f *RayTracer::tonemap(Vec3f *pixelbuffer) {
+    Vec3f *RayTracer::tonemap(Vec3f *pixelbuffer, int size) {
 
         //---------tonemapping function to be filled--------
 
-
+        Vec3f *pixel = pixelbuffer;
+        float multiplier = 255.0f;
+        for(int i = 0; i < size; ++i, ++pixel){
+            pixel->x *= multiplier;
+            pixel->y *= multiplier;
+            pixel->z *= multiplier;
+//            std::cout << *pixel << std::endl;
+        }
 
 
 
         return pixelbuffer;
 
     }
+
 
 
 } //namespace rt

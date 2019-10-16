@@ -17,6 +17,21 @@ public:
                                                                                      specularExponent(specularExponent),
                                                                                      diffuseColour(diffuseColour) {}
 
+    float getKd() const {
+        return kd;
+    }
+
+    float getKs() const {
+        return ks;
+    }
+
+    int getSpecularExponent() const {
+        return specularExponent;
+    }
+
+    const Vec3f &getDiffuseColour() const {
+        return diffuseColour;
+    }
 
 private:
     float kd = 0.0f;

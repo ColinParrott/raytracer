@@ -53,11 +53,12 @@ namespace rt {
                 assertSphere(value[i]);
                 Vec3f center = populateVector3(value[i]["center"]);
                 float radius = value[i]["radius"].GetFloat();
-                Material material = this->populateMaterial(value[i]["material"]);
-                Sphere *sphere = new Sphere(center, radius, &material);
-                std::cout << sphere->toString() << std::endl;
+                Material *material = this->populateMaterial(value[i]["material"]);
+                auto *sphere = new Sphere(center, radius, material);
+//                std::cout << sphere->toString() << std::endl;
+                std::cout << sphere->getMaterial()->getDiffuseColour() << std::endl;
                 this->shapes.push_back(sphere);
-
+                std::cout << shapes[i]->getMaterial()->getDiffuseColour() << std::endl;
             }
             else
             {
@@ -66,13 +67,13 @@ namespace rt {
         }
     }
 
-    Material Scene::populateMaterial(const Value &material){
+    Material* Scene::populateMaterial(const Value &material){
         float ks = material["ks"].GetFloat();
         float kd = material["kd"].GetFloat();
         int specularExponent = material["specularexponent"].GetInt();
         Vec3f diffuseColour = populateVector3(material["diffusecolor"]);
 
-        return {kd, ks, specularExponent, diffuseColour};
+        return new Material(kd, ks, specularExponent, diffuseColour);
     }
 
     void Scene::assertSphere(const Value &sphere){

@@ -29,6 +29,8 @@ public:
 	//
 	virtual Hit intersect(Ray)=0;
 
+    Material *getMaterial() const;
+
 
 protected:
 
