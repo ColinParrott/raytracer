@@ -22,30 +22,29 @@ namespace rt {
 
         Vec3f *pixelbuffer = new Vec3f[camera->getWidth() * camera->getHeight()], *pixel = pixelbuffer;
 
-
-        auto origin = Vec3f(0.0, 0.0, 0.0);
-        auto lowerLeftCorner = Vec3f(-2.0, -1.0, -1.0);
-        auto horizontal = Vec3f(4.0, 0.0, 0.0);
-        auto vertical = Vec3f(0.0, 2.0, 0.0);
-        //----------main rendering function to be filled------
-        for(unsigned y = 0; y < camera->getHeight(); ++y){
-            for(unsigned x = 0; x < camera->getWidth(); ++x, ++pixel){
-                float u = float(x) / float(camera->getWidth());
-                float v = float(y) / float(camera->getHeight());
-                Ray ray = Ray(origin, lowerLeftCorner + u*horizontal + v*vertical, PRIMARY);
-                for(Shape * shape : scene->shapes)
-                {
-                    if(shape->intersect(ray).collided)
-                        *pixel = shape->getMaterial()->getDiffuseColour();
-                    else
-                        *pixel = scene->backgroundColour;
-                }
-
+        float fov_radians = camera->getFov() * (M_PI / 180);
+        for(unsigned y = 0; y < camera->getHeight(); y++){
+            for(unsigned x = 0; x < camera->getWidth(); x++, pixel++){
+                float dirX = (x + 0.5) - camera->getWidth() / 2;
+                float dirY = -(y + 0.5) + camera->getHeight() / 2;
+                float dirZ = -camera->getHeight()/(2.0f*tan(fov_radians/2.0f));
+                pixelbuffer[x+y*camera->getWidth()] = RayTracer::castRay(Vec3f(0, 0, 0), Vec3f(dirX, dirY, dirZ).normalize(), scene, nbounces);
             }
         }
 
+        return pixelbuffer;
+    }
 
-       return pixelbuffer;
+    Vec3f RayTracer::castRay(const Vec3f &origin, const Vec3f &dir, Scene *scene, int nbounces){
+        for(Shape *shape : scene->shapes){
+            if(shape->intersect(Ray(origin, dir, PRIMARY)).collided){
+                return shape->getMaterial()->getDiffuseColour();
+            }
+            else
+            {
+                return scene->backgroundColour;
+            }
+        }
     }
 
 /**
@@ -61,7 +60,7 @@ namespace rt {
 
         Vec3f *pixel = pixelbuffer;
         float multiplier = 255.0f;
-        for(int i = 0; i < size; ++i, ++pixel){
+        for (int i = 0; i < size; ++i, ++pixel) {
             pixel->x *= multiplier;
             pixel->y *= multiplier;
             pixel->z *= multiplier;
@@ -69,11 +68,9 @@ namespace rt {
         }
 
 
-
         return pixelbuffer;
 
     }
-
 
 
 } //namespace rt

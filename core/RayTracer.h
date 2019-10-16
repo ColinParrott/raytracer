@@ -27,6 +27,7 @@ public:
 
 private:
 
+    static Vec3f castRay(const Vec3f &origin, const Vec3f &dir, Scene *scene, int nbounces);
 };
 
 

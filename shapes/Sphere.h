@@ -46,6 +46,7 @@ namespace rt{
 
         Vec3f center;
 
+        Vec3f getNormal(Vec3f point);
     };
 
 

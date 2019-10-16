@@ -5,8 +5,14 @@
  */
 #include "Sphere.h"
 
+#include <cmath>
+
 
 namespace rt{
+
+    Sphere::Sphere() {
+
+    }
 
     Sphere::~Sphere(){
         delete material;
@@ -22,39 +28,41 @@ namespace rt{
 	 */
 	Hit Sphere::intersect(Ray ray){
 
-//	    std::cout << "intersect()" << std::endl;
 		Hit h;
 		//-----------to be implemented -------------
+		Vec3f o = ray.originPoint;
+		Vec3f d = ray.direction;
+		Vec3f v = o - center;
 
-		Vec3f oc = ray.originPoint - this->center;
-		float a = ray.direction.dotProduct(ray.direction);
-		float b = 2.0f * ray.direction.dotProduct(oc);
-		float c = oc.dotProduct(oc) - (this->radius * this->radius);
+		const float b = 2 * v.dotProduct(d);
+		const float c = v.dotProduct(v) - (radius*radius);
+		float delta = b*b - 4 * c;
 
-		float discriminant = b*b - 4*a*c;
-
-		if(discriminant <= 0){
-//		    std::cout << "hit!!" << std::endl;
+		if (delta < 1e-4){
 		    h.collided = false;
-		    h.point = NULL;
-		    h.color = Vec3i(0,0,0);
-		    return h;
+            return h;
 		}
-		else
-        {
-//		    std::cout << "miss!" << std::endl;
-		    h.collided = true;
-		    h.point = NULL; // todo: calculate!
-		    h.color = Vec3i(255, 0, 0);
-		    return h;
-        }
 
+		const float t1 = (-b - std::sqrt(delta))/2;
+		const float t2 = (-b + std::sqrt(delta))/2;
 
+		float t = (t1 < t2) ? t1 : t2;
+
+		h.collided = true;
+		//todo: fill in point?
+        return h;
 	}
 
-    Sphere::Sphere() {
+	/**
+	 * Computes the normal vector to a sphere at a given point
+	 * @param point Point on sphere to calculate normal for
+	 * @return The normal vector for the given point
+	 */
+	Vec3f Sphere::getNormal(Vec3f point){
+	    return (point - center) * (-1/(radius));
+	}
 
-    }
+
 
 } //namespace rt
 

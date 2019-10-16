@@ -47,6 +47,9 @@ Camera* Camera::createCamera(Value& cameraSpecs){
 
 }
 
+    int Camera::getFov() const {
+        return fov;
+    }
 
 
 } //namespace rt

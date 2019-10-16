@@ -77,6 +77,7 @@ public:
 		this->width = width;
 	}
 
+    int getFov() const;
 
 
 protected:

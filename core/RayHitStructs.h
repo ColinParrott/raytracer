@@ -38,7 +38,6 @@ namespace rt {
 
         Vec3f point; //point where ray hits a shape
         bool collided;
-        Vec3i color;
         //----------Hit variables to be filled------
     };
 
