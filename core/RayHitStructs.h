@@ -36,7 +36,8 @@ namespace rt {
 
     struct Hit {
 
-        Vec3f point; //point where ray hits a shape
+        Vec3f point; //point where ray hits an object
+        Vec3f pointNormal; // normal at point where ray hits an object
         bool collided;
         //----------Hit variables to be filled------
     };

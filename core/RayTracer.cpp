@@ -37,8 +37,11 @@ namespace rt {
 
     Vec3f RayTracer::castRay(const Vec3f &origin, const Vec3f &dir, Scene *scene, int nbounces){
         for(Shape *shape : scene->shapes){
-            if(shape->intersect(Ray(origin, dir, PRIMARY)).collided){
-                return shape->getMaterial()->getDiffuseColour();
+            Hit h = shape->intersect(Ray(origin, dir, PRIMARY));
+            if(h.collided){
+                float facingRatio = std::max(0.0f, h.pointNormal.dotProduct(dir));
+//                std::cout << facingRatio << std::endl;
+                return shape->getMaterial()->getDiffuseColour() * facingRatio;
             }
             else
             {

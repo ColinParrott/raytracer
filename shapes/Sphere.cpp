@@ -49,7 +49,8 @@ namespace rt{
 		float t = (t1 < t2) ? t1 : t2;
 
 		h.collided = true;
-		//todo: fill in point?
+		h.point = o + t*d;
+		h.pointNormal = getNormal(h.point);
         return h;
 	}
 
