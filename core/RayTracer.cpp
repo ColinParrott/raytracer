@@ -9,9 +9,6 @@
 
 namespace rt {
 
-    inline
-    float deg2rad(const float &deg) { return deg * M_PI / 180; }
-
 
     /**
  * Performs ray tracing to render a photorealistic scene
@@ -33,7 +30,7 @@ namespace rt {
                 float dirZ = -camera->getHeight() / (2.0f * tan(fov_radians / 2.0f));
                 pixelbuffer[x + y * camera->getWidth()] = RayTracer::castRay(Vec3f(0, 0, 0),
                                                                              Vec3f(dirX, dirY, dirZ).normalize(), scene,
-                                                                             nbounces);
+                                                                             nbounces, 0, PRIMARY);
             }
         }
 
@@ -41,60 +38,57 @@ namespace rt {
         return pixelbuffer;
     }
 
-    Vec3f RayTracer::castRay(const Vec3f &origin, const Vec3f &dir, Scene *scene, int nbounces) {
+    Vec3f
+    RayTracer::castRay(const Vec3f &origin, const Vec3f &dir, Scene *scene, int nbounces, int depth, RayType rayType) {
 
-        Shape *hitObject;
-        Vec3f hitPoint;
-        Vec3f hitNormal;
-        bool collided = false;
-        double hitDistance = INFINITY;
-
-        for (Shape *shape : scene->shapes) {
-            Hit h = shape->intersect(Ray(origin, dir, PRIMARY));
-
-            // Get closest object that the ray hits
-            if (h.collided) {
-                double distance =
-                        pow(h.point.x - origin.x, 2) + pow(h.point.y - origin.y, 2) + pow(h.point.z - origin.z, 2);
-                if (distance < hitDistance) {
-                    hitObject = shape;
-                    hitDistance = distance;
-                    hitPoint = h.point;
-                    hitNormal = h.pointNormal;
-                    collided = true;
-                }
-            }
+        // Return background colour if recursion depth is beyond limit
+        if (depth > nbounces) {
+            return scene->backgroundColour;
         }
 
-        if (!collided)
+        // Check if ray hits anything in scene
+        Hit hit = scene->intersect(Ray(origin, dir, rayType));
+
+        // Return background colour on miss
+        if (!hit.collided)
             return scene->backgroundColour;
 
-        BlinnPhong *mat = (BlinnPhong *) hitObject->getMaterial();
+        auto *mat = (BlinnPhong *) hit.material;
+
+        // Set ambient light
+        Vec3f iAmbient = scene->backgroundColour * scene->ambient;
 
 
-        // Add ambient light
-        Vec3f iAmbient = scene->backgroundColour * mat->getDiffuseColour();
         Vec3f iDiffuse = Vec3f(0.0f, 0.0f, 0.0f);
         Vec3f iSpecular = Vec3f(0.0f, 0.0f, 0.0f);
 
         for (LightSource *lightSource : scene->lightSources) {
+            Vec3f lightDir = (lightSource->position - hit.point).normalize();
+            float lightDistance = (lightSource->position - hit.point).norm();
+            Vec3f norm = hit.normal;
 
-            // Add diffuse light
-            Vec3f lightDir = (lightSource->position - hitPoint).normalize();
-            Vec3f norm = hitNormal.normalize();
+            Vec3f shadowOrigin = lightDir.dotProduct(norm) < 0 ? hit.point - norm*1e-3 : hit.point + norm*1e-3;
 
+            Hit shadowHit = scene->intersect(Ray(shadowOrigin, lightDir, SHADOW));
+            if (shadowHit.collided && (shadowHit.point - shadowOrigin).norm() < lightDistance)
+                continue;
+
+
+            // Add diffuse and specular
             float diffuseDot = lightDir.dotProduct(norm);
             if (diffuseDot > 0) {
                 // Add diffuse
                 iDiffuse = mat->getKd() * std::max(diffuseDot, 0.0f) * lightSource->intensity;
 
                 // Add specular
-                Vec3f viewDir = (origin - hitPoint).normalize();
+                Vec3f viewDir = (origin - hit.point).normalize();
                 Vec3f reflectDir = RayTracer::getReflectionDirection(-lightDir, norm).normalize();
                 float specDot = std::max(reflectDir.dotProduct(viewDir), 0.0f);
-                iSpecular = mat->getKs() * std::pow(specDot, mat->getSpecularExponent()) * lightSource->intensity;
+                iSpecular = mat->getKs() * std::pow(specDot, mat->getSpecularExponent()) * lightSource->intensity *
+                            lightSource->colour;
 
             }
+
         }
         return (iAmbient + iDiffuse + iSpecular) * mat->getDiffuseColour();
     }

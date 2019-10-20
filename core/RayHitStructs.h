@@ -8,6 +8,7 @@
 #include "math/geometry.h"
 #include "Material.h"
 
+
 namespace rt {
 
 /*
@@ -37,8 +38,9 @@ namespace rt {
     struct Hit {
 
         Vec3f point; //point where ray hits an object
-        Vec3f pointNormal; // normal at point where ray hits an object
+        Vec3f normal; // normal at point where ray hits an object
         bool collided;
+        Material *material;
         //----------Hit variables to be filled------
     };
 

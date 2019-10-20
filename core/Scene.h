@@ -35,9 +35,11 @@ public:
 	}
 
 	void createScene(Value& scenespecs);
-
+    Hit intersect(Ray ray);
+    Hit intersectIgnoreShape(Ray ray, Shape *shape);
     std::vector<Shape*> shapes;
     Vec3f backgroundColour;
+    Vec3f ambient;
     std::vector<LightSource*> lightSources;
 private:
 
@@ -56,6 +58,11 @@ private:
     void assertMaterial(const Value &material);
 
     Material * populateMaterial(const Value &material);
+
+    void assertPlane(const Value &plane);
+
+
+
 };
 
 } //namespace rt

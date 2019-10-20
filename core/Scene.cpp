@@ -6,6 +6,7 @@
 #include <lights/PointLight.h>
 #include <lights/AreaLight.h>
 #include <materials/BlinnPhong.h>
+#include <shapes/Plane.h>
 #include "Scene.h"
 
 
@@ -29,6 +30,10 @@ namespace rt {
             populateVector3(scenespecs["backgroundcolor"], backgroundColour);
         }
 
+        if(scenespecs.HasMember("ambient")){
+            populateVector3(scenespecs["ambient"], ambient);
+        }
+
         if (scenespecs.HasMember("lightsources")) {
             Value &lightsources = scenespecs["lightsources"];
             assert(lightsources.IsArray());
@@ -40,10 +45,47 @@ namespace rt {
             assert(shapes.IsArray());
             populateShapes(shapes);
         }
-
-
     }
 
+    Hit Scene::intersect(Ray ray){
+        Hit hit;
+        hit.collided = false;
+        double hitDistance = INFINITY;
+        for (Shape *s : shapes) {
+            Hit h = s->intersect(Ray(ray.originPoint, ray.direction, ray.rayType));
+
+            // Get closest object that the ray hits
+            if (h.collided) {
+                double distance = (h.point - ray.originPoint).length();
+                if (distance < hitDistance) {
+                    hitDistance = distance;
+                    hit = h;
+                    hit.collided = true;
+                }
+            }
+        }
+        return hit;
+    }
+
+    Hit Scene::intersectIgnoreShape(Ray ray, Shape *shape){
+        Hit hit;
+        hit.collided = false;
+        double hitDistance = INFINITY;
+        for (Shape *s : shapes) {
+            Hit h = s->intersect(Ray(ray.originPoint, ray.direction, ray.rayType));
+
+            // Get closest object that the ray hits
+            if (h.collided && s != shape) {
+                double distance = (h.point - ray.originPoint).length();
+                if (distance < hitDistance) {
+                    hitDistance = distance;
+                    hit = h;
+                    hit.collided = true;
+                }
+            }
+        }
+        return hit;
+    }
 
     void Scene::populateShapes(const Value &value){
         for(SizeType i = 0; i < value.Size(); i++){
@@ -61,6 +103,14 @@ namespace rt {
                 this->shapes.push_back(sphere);
                 std::cout << ((BlinnPhong*)shapes[i]->getMaterial())->getDiffuseColour() << std::endl;
             }
+            else if(type == "plane"){
+                assertPlane(value[i]);
+                Vec3f point = populateVector3(value[i]["point"]);
+                Vec3f normal = populateVector3(value[i]["normal"]);
+                Material *material = this->populateMaterial(value[i]["material"]);
+                Plane *plane = new Plane(point, normal, material);
+                this->shapes.push_back(plane);
+            }
             else
             {
                 std::cout << "[WARN] Not implemented parsing for shape: " << type << "\t" << "(IGNORING IT)" << std::endl;
@@ -75,6 +125,16 @@ namespace rt {
         Vec3f diffuseColour = populateVector3(material["diffusecolor"]);
 
         return new BlinnPhong(kd, ks, specularExponent, diffuseColour);
+    }
+
+    void Scene::assertPlane(const Value &plane){
+        assert(plane.HasMember("point"));
+        assert(plane.HasMember("normal"));
+        assert(plane.HasMember("material"));
+        assert(plane["point"].IsArray());
+        assert(plane["normal"].IsArray());
+        assert(plane["material"].IsObject());
+        assertMaterial(plane["material"]);
     }
 
     void Scene::assertSphere(const Value &sphere){
@@ -145,6 +205,7 @@ namespace rt {
 
         return temp;
     }
+
 
 }
 //namespace rt

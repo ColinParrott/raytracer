@@ -27,7 +27,7 @@ public:
 
 private:
 
-    static Vec3f castRay(const Vec3f &origin, const Vec3f &dir, Scene *scene, int nbounces);
+    static Vec3f castRay(const Vec3f &origin, const Vec3f &dir, Scene *scene, int nbounces, int depth, RayType rayType);
 
     static Vec3f getReflectionDirection(const Vec3f &lightDir, const Vec3f &hitNormal);
 };
