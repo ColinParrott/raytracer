@@ -60,7 +60,8 @@ namespace rt{
 	 * @return The normal vector for the given point
 	 */
 	Vec3f Sphere::getNormal(Vec3f point){
-	    return (point - center) * (-1/(radius));
+        return (point - center).normalize();
+//	    return (point - center) * (-1/(radius));
 	}
 
 

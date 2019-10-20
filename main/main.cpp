@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <shapes/Sphere.h>
+#include <materials/BlinnPhong.h>
 
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
@@ -58,7 +59,7 @@ int main(int argc, char* argv[]){
         for(Shape *s : scene->shapes){
             Sphere *sphere = (Sphere*) s;
             std::cout << sphere->toString() << std::endl;
-            std::cout << sphere->getMaterial()->getDiffuseColour() << std::endl;
+            std::cout << ((BlinnPhong*)sphere->getMaterial())->getDiffuseColour() << std::endl;
         }
     }
 

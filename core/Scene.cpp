@@ -5,6 +5,7 @@
 #include <shapes/Sphere.h>
 #include <lights/PointLight.h>
 #include <lights/AreaLight.h>
+#include <materials/BlinnPhong.h>
 #include "Scene.h"
 
 
@@ -56,9 +57,9 @@ namespace rt {
                 Material *material = this->populateMaterial(value[i]["material"]);
                 auto *sphere = new Sphere(center, radius, material);
 //                std::cout << sphere->toString() << std::endl;
-                std::cout << sphere->getMaterial()->getDiffuseColour() << std::endl;
+                std::cout << ((BlinnPhong*) sphere->getMaterial())->getDiffuseColour() << std::endl;
                 this->shapes.push_back(sphere);
-                std::cout << shapes[i]->getMaterial()->getDiffuseColour() << std::endl;
+                std::cout << ((BlinnPhong*)shapes[i]->getMaterial())->getDiffuseColour() << std::endl;
             }
             else
             {
@@ -70,10 +71,10 @@ namespace rt {
     Material* Scene::populateMaterial(const Value &material){
         float ks = material["ks"].GetFloat();
         float kd = material["kd"].GetFloat();
-        int specularExponent = material["specularexponent"].GetInt();
+        int specularExponent = material["specularexponent"].GetFloat();
         Vec3f diffuseColour = populateVector3(material["diffusecolor"]);
 
-        return new Material(kd, ks, specularExponent, diffuseColour);
+        return new BlinnPhong(kd, ks, specularExponent, diffuseColour);
     }
 
     void Scene::assertSphere(const Value &sphere){
@@ -93,7 +94,7 @@ namespace rt {
         assert(material.HasMember("diffusecolor"));
         assert(material["ks"].IsFloat());
         assert(material["kd"].IsFloat());
-        assert(material["specularexponent"].IsInt());
+        assert(material["specularexponent"].IsFloat());
         assert(material["diffusecolor"].IsArray());
     }
 
@@ -102,16 +103,18 @@ namespace rt {
             assert(value[i]["type"].IsString());
             assert(value[i]["position"].IsArray());
             assert(value[i]["intensity"].IsArray());
+            assert(value[i]["colour"].IsArray());
             std::string type = value[i]["type"].GetString();
             Vec3f pos = populateVector3(value[i]["position"]);
             Vec3f intensity = populateVector3(value[i]["intensity"]);
+            Vec3f colour = populateVector3(value[i]["colour"]);
 
             LightSource *light;
 
             if (type == "pointlight") {
-                light = new PointLight(pos, intensity);
+                light = new PointLight(pos, intensity, colour);
             } else if (type == "arealight") {
-                light = new AreaLight(pos, intensity);
+                light = new AreaLight(pos, intensity, colour);
             }
             else
             {

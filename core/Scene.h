@@ -36,7 +36,6 @@ public:
 
 	void createScene(Value& scenespecs);
 
-
     std::vector<Shape*> shapes;
     Vec3f backgroundColour;
     std::vector<LightSource*> lightSources;

@@ -13,7 +13,7 @@ namespace rt{
 
 class AreaLight:public LightSource{
 public:
-    AreaLight(const Vec3f &position, const Vec3f &intensity);
+    AreaLight(const Vec3f &position, const Vec3f &intensity, const Vec3f &colour);
 };
 
 

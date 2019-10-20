@@ -13,31 +13,9 @@ namespace rt{
 class Material{
 public:
 
-    Material(float kd, float ks, int specularExponent, const Vec3f &diffuseColour) : kd(kd), ks(ks),
-                                                                                     specularExponent(specularExponent),
-                                                                                     diffuseColour(diffuseColour) {}
 
-    float getKd() const {
-        return kd;
-    }
-
-    float getKs() const {
-        return ks;
-    }
-
-    int getSpecularExponent() const {
-        return specularExponent;
-    }
-
-    const Vec3f &getDiffuseColour() const {
-        return diffuseColour;
-    }
 
 private:
-    float kd = 0.0f;
-    float ks = 0.0f;
-    int specularExponent = 0;
-    Vec3f diffuseColour;
 };
 
 
