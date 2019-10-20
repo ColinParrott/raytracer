@@ -30,29 +30,34 @@ namespace rt {
 
         Hit h;
         //-----------to be implemented -------------
-		Vec3f o = ray.originPoint;
-		Vec3f d = ray.direction.normalize();
-		Vec3f v = o - center;
 
-		const float b = 2 * v.dotProduct(d);
-		const float c = v.dotProduct(v) - (radius*radius);
-		float delta = b*b - 4 * c;
+        Vec3f l = this->center - ray.origin;
+        float adj = l.dotProduct(ray.direction);
+        float d2 = l.dotProduct(l) - (adj*adj);
+        float radius2 = this->radius * this->radius;
 
-		if (delta < 1e-4){
-		    h.collided = false;
+        if (d2 > radius2){
+            h.collided = false;
             return h;
-		}
+        }
 
-		const float t1 = (-b - std::sqrt(delta))/2;
-		const float t2 = (-b + std::sqrt(delta))/2;
+        float thc = std::sqrt(radius2 - d2);
+        float t0 = adj - thc;
+        float t1 = adj + thc;
 
-		float t = (t1 < t2) ? t1 : t2;
+        if (t0 < 1e-4 && t1 < 1e-4){
+            h.collided = false;
+            return h;
+        }
+
+        float t = (t0 < t1) ? t0 : t1;
 
         h.collided = true;
-        h.point = ray.originPoint + t * ray.direction;
+        h.point = ray.origin + t*ray.direction;
         h.normal = getNormal(h.point);
         h.material = material;
         return h;
+
     }
 
     /**

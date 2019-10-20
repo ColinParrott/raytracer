@@ -52,15 +52,17 @@ namespace rt {
         hit.collided = false;
         double hitDistance = INFINITY;
         for (Shape *s : shapes) {
-            Hit h = s->intersect(Ray(ray.originPoint, ray.direction, ray.rayType));
+            Hit h = s->intersect(Ray(ray.origin, ray.direction, ray.rayType));
 
             // Get closest object that the ray hits
             if (h.collided) {
-                double distance = (h.point - ray.originPoint).length();
+                double distance = (h.point - ray.origin).length();
                 if (distance < hitDistance) {
                     hitDistance = distance;
                     hit = h;
                     hit.collided = true;
+                    hit.point = h.point;
+
                 }
             }
         }
@@ -72,11 +74,11 @@ namespace rt {
         hit.collided = false;
         double hitDistance = INFINITY;
         for (Shape *s : shapes) {
-            Hit h = s->intersect(Ray(ray.originPoint, ray.direction, ray.rayType));
+            Hit h = s->intersect(Ray(ray.origin, ray.direction, ray.rayType));
 
             // Get closest object that the ray hits
             if (h.collided && s != shape) {
-                double distance = (h.point - ray.originPoint).length();
+                double distance = (h.point - ray.origin).length();
                 if (distance < hitDistance) {
                     hitDistance = distance;
                     hit = h;
@@ -162,19 +164,21 @@ namespace rt {
         for (SizeType i = 0; i < value.Size(); i++) {
             assert(value[i]["type"].IsString());
             assert(value[i]["position"].IsArray());
-            assert(value[i]["intensity"].IsArray());
+            assert(value[i]["diffintensity"].IsArray());
+            assert(value[i]["specintensity"].IsArray());
             assert(value[i]["colour"].IsArray());
             std::string type = value[i]["type"].GetString();
             Vec3f pos = populateVector3(value[i]["position"]);
-            Vec3f intensity = populateVector3(value[i]["intensity"]);
+            Vec3f diffintensity = populateVector3(value[i]["diffintensity"]);
+            Vec3f specintensity = populateVector3(value[i]["specintensity"]);
             Vec3f colour = populateVector3(value[i]["colour"]);
 
             LightSource *light;
 
             if (type == "pointlight") {
-                light = new PointLight(pos, intensity, colour);
+                light = new PointLight(pos, diffintensity, specintensity, colour);
             } else if (type == "arealight") {
-                light = new AreaLight(pos, intensity, colour);
+                light = new AreaLight(pos, diffintensity, specintensity, colour);
             }
             else
             {

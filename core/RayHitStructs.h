@@ -23,13 +23,13 @@ namespace rt {
     public:
 
         Ray(const Vec3f &a, const Vec3f &b, RayType type) {
-            originPoint = a;
+            origin = a;
             direction = b;
             rayType = type;
         }
 
         RayType rayType;
-        Vec3f originPoint;
+        Vec3f origin;
         Vec3f direction;
 
         //----------Ray variables to be filled------

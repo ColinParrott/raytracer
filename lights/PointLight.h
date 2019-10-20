@@ -16,7 +16,7 @@ class PointLight: public LightSource{
 
 
 public:
-    PointLight(const Vec3f &position, const Vec3f &intensity, const Vec3f &colour);
+    PointLight(const Vec3f &position, const Vec3f &diffuseIntensity, const Vec3f &specIntensity, const Vec3f &colour);
 };
 
 

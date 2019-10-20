@@ -55,22 +55,19 @@ namespace rt {
 
         auto *mat = (BlinnPhong *) hit.material;
 
-        // Set ambient light
+          // Set ambient light
         Vec3f iAmbient = scene->backgroundColour * scene->ambient;
 
 
         Vec3f iDiffuse = Vec3f(0.0f, 0.0f, 0.0f);
         Vec3f iSpecular = Vec3f(0.0f, 0.0f, 0.0f);
-
         for (LightSource *lightSource : scene->lightSources) {
             Vec3f lightDir = (lightSource->position - hit.point).normalize();
-            float lightDistance = (lightSource->position - hit.point).norm();
             Vec3f norm = hit.normal;
 
-            Vec3f shadowOrigin = lightDir.dotProduct(norm) < 0 ? hit.point - norm*1e-3 : hit.point + norm*1e-3;
-
-            Hit shadowHit = scene->intersect(Ray(shadowOrigin, lightDir, SHADOW));
-            if (shadowHit.collided && (shadowHit.point - shadowOrigin).norm() < lightDistance)
+            // todo: consider shadow acne fix if it arises (fine for now)
+            Hit shadowHit = scene->intersect(Ray(hit.point, lightDir, SHADOW));
+            if (shadowHit.collided)
                 continue;
 
 
@@ -78,19 +75,18 @@ namespace rt {
             float diffuseDot = lightDir.dotProduct(norm);
             if (diffuseDot > 0) {
                 // Add diffuse
-                iDiffuse = mat->getKd() * std::max(diffuseDot, 0.0f) * lightSource->intensity;
+                iDiffuse = mat->getKd() * std::max(diffuseDot, 0.0f) * lightSource->diffuseIntensity * mat->getDiffuseColour();
 
                 // Add specular
                 Vec3f viewDir = (origin - hit.point).normalize();
                 Vec3f reflectDir = RayTracer::getReflectionDirection(-lightDir, norm).normalize();
                 float specDot = std::max(reflectDir.dotProduct(viewDir), 0.0f);
-                iSpecular = mat->getKs() * std::pow(specDot, mat->getSpecularExponent()) * lightSource->intensity *
-                            lightSource->colour;
+                iSpecular = mat->getKs() * std::pow(specDot, mat->getSpecularExponent()) * lightSource->specIntensity *lightSource->colour;
 
             }
 
         }
-        return (iAmbient + iDiffuse + iSpecular) * mat->getDiffuseColour();
+        return iAmbient + iDiffuse + iSpecular;
     }
 
     /**

@@ -9,9 +9,10 @@
 namespace rt {
 
 
-    PointLight::PointLight(const Vec3f &position, const Vec3f &intensity, const Vec3f &colour) {
+    PointLight::PointLight(const Vec3f &position, const Vec3f &diffuseIntensity, const Vec3f &specIntensity, const Vec3f &colour) {
         this->position = position;
-        this->intensity = intensity;
+        this->diffuseIntensity = diffuseIntensity;
+        this->specIntensity = specIntensity;
         this->colour = colour;
     }
 } //namespace rt

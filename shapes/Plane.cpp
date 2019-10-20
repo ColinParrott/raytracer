@@ -15,11 +15,11 @@ namespace rt {
         float denom = normal.dotProduct(ray.direction.normalize());
 
         if(std::fabs(denom) > 0.0001f){
-            float t = (point - ray.originPoint).dotProduct(normal) / denom;
+            float t = (point - ray.origin).dotProduct(normal) / denom;
 
             if(t >= 1e-4){
                 h.collided = true;
-                h.point = ray.originPoint + t*ray.direction;
+                h.point = ray.origin + t * ray.direction;
                 h.normal = normal.normalize();
                 h.material = material;
                 return h;
