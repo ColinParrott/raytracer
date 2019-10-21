@@ -9,7 +9,6 @@
 
 namespace rt {
 
-
     /**
  * Performs ray tracing to render a photorealistic scene
  *
@@ -59,15 +58,23 @@ namespace rt {
         Vec3f iAmbient = scene->backgroundColour * scene->ambient;
 
 
+        Vec3f reflectDir = RayTracer::getReflectionDirection(dir, hit.normal).normalize();
+        Vec3f reflectOrig = reflectDir.dotProduct(hit.normal) < 0 ? hit.point - hit.normal*1e-3 : hit.point + hit.normal *1e-3;
+        Vec3f reflectColour = castRay(reflectOrig, reflectDir, scene, nbounces, depth + 1, SECONDARY);
+
+
         Vec3f iDiffuse = Vec3f(0.0f, 0.0f, 0.0f);
         Vec3f iSpecular = Vec3f(0.0f, 0.0f, 0.0f);
         for (LightSource *lightSource : scene->lightSources) {
             Vec3f lightDir = (lightSource->position - hit.point).normalize();
             Vec3f norm = hit.normal;
 
-            // todo: consider shadow acne fix if it arises (fine for now)
-            Hit shadowHit = scene->intersect(Ray(hit.point, lightDir, SHADOW));
-            if (shadowHit.collided)
+            // Fix for shadow acne/self occlusion
+            Vec3f shadowOrigin = lightDir.dotProduct(norm) < 0 ? hit.point - norm*1e-3 : hit.point + norm*1e-3;
+
+            // If shadow ray hit an object, skip adding this light source's contribution to the final colour
+            Hit shadowHit = scene->intersect(Ray(shadowOrigin, lightDir, SHADOW));
+            if (shadowHit.collided && (shadowHit.point - shadowOrigin).norm() < (lightSource->position - hit.point).norm())
                 continue;
 
 
@@ -79,14 +86,14 @@ namespace rt {
 
                 // Add specular
                 Vec3f viewDir = (origin - hit.point).normalize();
-                Vec3f reflectDir = RayTracer::getReflectionDirection(-lightDir, norm).normalize();
-                float specDot = std::max(reflectDir.dotProduct(viewDir), 0.0f);
+                Vec3f lightReflectDir = RayTracer::getReflectionDirection(-lightDir, norm).normalize();
+                float specDot = std::max(lightReflectDir.dotProduct(viewDir), 0.0f);
                 iSpecular = mat->getKs() * std::pow(specDot, mat->getSpecularExponent()) * lightSource->specIntensity *lightSource->colour;
 
             }
 
         }
-        return iAmbient + iDiffuse + iSpecular;
+        return iAmbient + iDiffuse + iSpecular + (reflectColour * mat->getReflectivity());
     }
 
     /**

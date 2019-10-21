@@ -124,9 +124,10 @@ namespace rt {
         float ks = material["ks"].GetFloat();
         float kd = material["kd"].GetFloat();
         int specularExponent = material["specularexponent"].GetFloat();
+        float reflectivity = material["reflectivity"].GetFloat();
         Vec3f diffuseColour = populateVector3(material["diffusecolor"]);
 
-        return new BlinnPhong(kd, ks, specularExponent, diffuseColour);
+        return new BlinnPhong(kd, ks, specularExponent, reflectivity, diffuseColour);
     }
 
     void Scene::assertPlane(const Value &plane){
@@ -154,8 +155,10 @@ namespace rt {
         assert(material.HasMember("kd"));
         assert(material.HasMember("specularexponent"));
         assert(material.HasMember("diffusecolor"));
+        assert(material.HasMember("reflectivity"));
         assert(material["ks"].IsFloat());
         assert(material["kd"].IsFloat());
+        assert(material["reflectivity"].IsFloat());
         assert(material["specularexponent"].IsFloat());
         assert(material["diffusecolor"].IsArray());
     }
