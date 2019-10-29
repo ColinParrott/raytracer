@@ -54,7 +54,7 @@ namespace rt {
 
         auto *mat = (BlinnPhong *) hit.material;
 
-          // Set ambient light
+        // Set ambient light
         Vec3f iAmbient = scene->backgroundColour * scene->ambient;
 
 

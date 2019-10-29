@@ -7,6 +7,7 @@
 #include <lights/AreaLight.h>
 #include <materials/BlinnPhong.h>
 #include <shapes/Plane.h>
+#include <shapes/Triangle.h>
 #include "Scene.h"
 
 
@@ -113,6 +114,15 @@ namespace rt {
                 Plane *plane = new Plane(point, normal, material);
                 this->shapes.push_back(plane);
             }
+            else if(type == "triangle"){
+                assertTriangle(value[i]);
+                Vec3f v0 = populateVector3(value[i]["v0"]);
+                Vec3f v1 = populateVector3(value[i]["v1"]);
+                Vec3f v2 = populateVector3(value[i]["v2"]);
+                Material *material = this->populateMaterial(value[i]["material"]);
+                Triangle *triangle = new Triangle(v0, v1, v2, material);
+                this->shapes.push_back(triangle);
+            }
             else
             {
                 std::cout << "[WARN] Not implemented parsing for shape: " << type << "\t" << "(IGNORING IT)" << std::endl;
@@ -128,6 +138,17 @@ namespace rt {
         Vec3f diffuseColour = populateVector3(material["diffusecolor"]);
 
         return new BlinnPhong(kd, ks, specularExponent, reflectivity, diffuseColour);
+    }
+
+    void Scene::assertTriangle(const Value &triangle){
+        assert(triangle.HasMember("v0"));
+        assert(triangle.HasMember("v1"));
+        assert(triangle.HasMember("v2"));
+        assert(triangle["v0"].IsArray());
+        assert(triangle["v1"].IsArray());
+        assert(triangle["v2"].IsArray());
+        assert(triangle["material"].IsObject());
+        assertMaterial(triangle["material"]);
     }
 
     void Scene::assertPlane(const Value &plane){

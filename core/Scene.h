@@ -62,7 +62,7 @@ private:
     void assertPlane(const Value &plane);
 
 
-
+    void assertTriangle(const Value &triangle);
 };
 
 } //namespace rt

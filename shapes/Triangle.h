@@ -13,13 +13,28 @@ namespace rt {
 
     class Triangle : public Shape {
     public:
-        ~Triangle() override;
+
+        Triangle(Vec3f v0, Vec3f v1, Vec3f v2, Material *m) : v0(v0), v1(v1), v2(v2){
+            this->material = m;
+        };
+
+        ~Triangle() override {
+            delete material;
+        }
 
         Hit intersect(Ray ray) override;
 
 
+        const Vec3f &getV0() const;
+
+        const Vec3f &getV1() const;
+
+        const Vec3f &getV2() const;
+
     private:
-        Vec3f vertices[3];
+        Vec3f v0;
+        Vec3f v1;
+        Vec3f v2;
     };
 
 
