@@ -11,14 +11,17 @@
 namespace rt {
 
     class Plane : public Shape {
+
     public:
         Plane(const Vec3f &point, const Vec3f &normal, Material *material): point(point), normal(normal){
             this->material = material;
         }
 
-        ~Plane() override = default;
+        ~Plane() override{
+            delete material;
+        }
 
-        Hit intersect(Ray ray) override;
+        Hit intersect(Ray ray);
 
 
     private:
