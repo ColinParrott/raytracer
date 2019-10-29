@@ -102,9 +102,9 @@ namespace rt {
                 Material *material = this->populateMaterial(value[i]["material"]);
                 auto *sphere = new Sphere(center, radius, material);
 //                std::cout << sphere->toString() << std::endl;
-                std::cout << ((BlinnPhong*) sphere->getMaterial())->getDiffuseColour() << std::endl;
+//                std::cout << ((BlinnPhong*) sphere->getMaterial())->getDiffuseColour() << std::endl;
                 this->shapes.push_back(sphere);
-                std::cout << ((BlinnPhong*)shapes[i]->getMaterial())->getDiffuseColour() << std::endl;
+//                std::cout << ((BlinnPhong*)shapes[i]->getMaterial())->getDiffuseColour() << std::endl;
             }
             else if(type == "plane"){
                 assertPlane(value[i]);
@@ -133,11 +133,17 @@ namespace rt {
     Material* Scene::populateMaterial(const Value &material){
         float ks = material["ks"].GetFloat();
         float kd = material["kd"].GetFloat();
-        int specularExponent = material["specularexponent"].GetFloat();
+        int specularExponent = material["specularexponent"].GetInt();
         float reflectivity = material["reflectivity"].GetFloat();
         Vec3f diffuseColour = populateVector3(material["diffusecolor"]);
 
-        return new BlinnPhong(kd, ks, specularExponent, reflectivity, diffuseColour);
+        std::string texturePath;
+        if(material.HasMember("texture")){
+            assert(material["texture"].IsString());
+            texturePath = material["texture"].GetString();
+        }
+
+        return new BlinnPhong(kd, ks, specularExponent, reflectivity, diffuseColour, texturePath);
     }
 
     void Scene::assertTriangle(const Value &triangle){
@@ -180,7 +186,7 @@ namespace rt {
         assert(material["ks"].IsFloat());
         assert(material["kd"].IsFloat());
         assert(material["reflectivity"].IsFloat());
-        assert(material["specularexponent"].IsFloat());
+        assert(material["specularexponent"].IsInt());
         assert(material["diffusecolor"].IsArray());
     }
 
