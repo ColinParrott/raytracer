@@ -133,8 +133,10 @@ namespace rt {
     Material* Scene::populateMaterial(const Value &material){
         float ks = material["ks"].GetFloat();
         float kd = material["kd"].GetFloat();
+        float refractive_index = material["refractive_index"].GetFloat();
         int specularExponent = material["specularexponent"].GetInt();
         float reflectivity = material["reflectivity"].GetFloat();
+        float transparency = material["transparency"].GetFloat();
         Vec3f diffuseColour = populateVector3(material["diffusecolor"]);
 
         std::string texturePath;
@@ -143,7 +145,7 @@ namespace rt {
             texturePath = material["texture"].GetString();
         }
 
-        return new BlinnPhong(kd, ks, specularExponent, reflectivity, diffuseColour, texturePath);
+        return new BlinnPhong(kd, ks, specularExponent, reflectivity, diffuseColour, refractive_index, transparency, texturePath);
     }
 
     void Scene::assertTriangle(const Value &triangle){
@@ -183,6 +185,8 @@ namespace rt {
         assert(material.HasMember("specularexponent"));
         assert(material.HasMember("diffusecolor"));
         assert(material.HasMember("reflectivity"));
+        assert(material.HasMember("refractive_index"));
+        assert(material.HasMember("transparency"));
         assert(material["ks"].IsFloat());
         assert(material["kd"].IsFloat());
         assert(material["reflectivity"].IsFloat());

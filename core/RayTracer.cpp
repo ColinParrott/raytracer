@@ -62,6 +62,9 @@ namespace rt {
         Vec3f reflectOrig = reflectDir.dotProduct(hit.normal) < 0 ? hit.point - hit.normal*1e-3 : hit.point + hit.normal *1e-3;
         Vec3f reflectColour = castRay(reflectOrig, reflectDir, scene, nbounces, depth + 1, SECONDARY);
 
+        Vec3f refractDir = RayTracer::getRefractionDirection(dir, hit.normal, mat->getRefractiveIndex()).normalize();
+        Vec3f refractOrig = refractDir.dotProduct(hit.normal) < 0 ? hit.point - hit.normal*1e-3 : hit.point + hit.normal * 1e-3;
+        Vec3f refractColour = castRay(refractOrig, refractDir, scene, nbounces, depth + 1, SECONDARY);
 
         Vec3f iDiffuse = Vec3f(0.0f, 0.0f, 0.0f);
         Vec3f iSpecular = Vec3f(0.0f, 0.0f, 0.0f);
@@ -69,13 +72,13 @@ namespace rt {
             Vec3f lightDir = (lightSource->position - hit.point).normalize();
             Vec3f norm = hit.normal;
 
-            // Fix for shadow acne/self occlusion
-            Vec3f shadowOrigin = lightDir.dotProduct(norm) < 0 ? hit.point - norm*1e-3 : hit.point + norm*1e-3;
-
-            // If shadow ray hit an object, skip adding this light source's contribution to the final colour
-            Hit shadowHit = scene->intersect(Ray(shadowOrigin, lightDir, SHADOW));
-            if (shadowHit.collided && (shadowHit.point - shadowOrigin).norm() < (lightSource->position - hit.point).norm())
-                continue;
+//            // Fix for shadow acne/self occlusion
+//            Vec3f shadowOrigin = lightDir.dotProduct(norm) < 0 ? hit.point - norm*1e-3 : hit.point + norm*1e-3;
+//
+//            // If shadow ray hit an object, skip adding this light source's contribution to the final colour
+//            Hit shadowHit = scene->intersect(Ray(shadowOrigin, lightDir, SHADOW));
+//            if (shadowHit.collided && (shadowHit.point - shadowOrigin).norm() < (lightSource->position - hit.point).norm())
+//                continue;
 
 
             // Add diffuse and specular
@@ -93,7 +96,7 @@ namespace rt {
             }
 
         }
-        return iAmbient + iDiffuse + iSpecular + (reflectColour * mat->getReflectivity());
+        return iAmbient + iDiffuse + iSpecular + (reflectColour * mat->getReflectivity()) + (refractColour * mat->getTransparency());
     }
 
     /**
@@ -104,6 +107,27 @@ namespace rt {
  */
     Vec3f RayTracer::getReflectionDirection(const Vec3f &lightDir, const Vec3f &hitNormal) {
         return lightDir - (2.0f * lightDir.dotProduct(hitNormal) * hitNormal);
+    }
+
+    /**
+     *
+     * @param lightDir
+     * @param hitNormal
+     * @param refractive_index
+     * @param eta_i
+     * @return
+     */
+
+    Vec3f RayTracer::getRefractionDirection(const Vec3f &lightDir, const Vec3f &hitNormal, const float refractive_index){
+        float cos_i = std::fmax(-1.0f, std::fmin(1.0f, lightDir.dotProduct(hitNormal)));
+        if(cos_i < 0){
+            return getRefractionDirection(lightDir, -hitNormal, refractive_index);
+        }
+
+        float eta = 1.0f / refractive_index;
+        float k = 1 - eta*eta*(1 - cos_i * cos_i);
+        return k < 0 ? Vec3f(1, 0, 0) : lightDir*eta + hitNormal*(eta*cos_i - sqrtf(k));
+
     }
 
 /**

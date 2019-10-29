@@ -34,7 +34,7 @@ namespace rt {
             return diffuseColour;
         }
 
-        float getReflectivity() const{
+        float getReflectivity() const {
             return reflectivity;
         }
 
@@ -42,14 +42,26 @@ namespace rt {
             return texturePath;
         }
 
-        BlinnPhong(float kd, float ks, int specularExponent, float reflectivity, const Vec3f &diffuseColour, std::string  texturePath) : kd(kd),
-                                                                                                                 ks(ks),
-                                                                                                                 specularExponent(
-                                                                                                                         specularExponent),
-                                                                                                                 reflectivity(
-                                                                                                                         reflectivity),
-                                                                                                                 diffuseColour(
-                                                                                                                         diffuseColour), texturePath(std::move(texturePath)) {}
+        float getRefractiveIndex() const {
+            return refractive_index;
+        }
+
+        float getTransparency() const {
+            return transparency;
+        }
+
+        BlinnPhong(float kd, float ks, int specularExponent, float reflectivity, const Vec3f &diffuseColour,
+                   float refractive_index, float transparency, std::string texturePath) : kd(kd),
+                                                                      ks(ks),
+                                                                      specularExponent(
+                                                                              specularExponent),
+                                                                      reflectivity(
+                                                                              reflectivity),
+                                                                      diffuseColour(
+                                                                              diffuseColour),
+                                                                      refractive_index(refractive_index),
+                                                                      transparency(transparency),
+                                                                      texturePath(std::move(texturePath)) {}
 
     private:
         float kd = 0.0f;
@@ -57,6 +69,8 @@ namespace rt {
         int specularExponent = 0;
         float reflectivity = 0.0f;
         Vec3f diffuseColour;
+        float refractive_index;
+        float transparency;
         std::string texturePath;
 
     };
