@@ -148,11 +148,11 @@ namespace rt {
     Vec3f RayTracer::getRefractionDirection(const Vec3f &I, const Vec3f &N, float eta_t, float eta_i=1.f){
         float cosi = - std::max(-1.f, std::min(1.f, I.dotProduct(N)));
         if (cosi<0){
-            return RayTracer::getRefractionDirection(I, -N, eta_i, eta_t); // if the ray comes from the inside the object, swap the air and the media
+            return RayTracer::getRefractionDirection(I, -N, eta_i, eta_t);
         }
         float eta = eta_i / eta_t;
         float k = 1 - eta*eta*(1 - cosi*cosi);
-        return k<0 ? Vec3f(1,0,0) : I*eta + N*(eta*cosi - sqrtf(k)); // k<0 = total reflection, no ray to refract. I refract it anyways, this has no physical meaning
+        return k<0 ? Vec3f(0,0,0) : I*eta + N*(eta*cosi - sqrtf(k)); // k<0 = total internal reflection
     }
 
 /**
