@@ -31,7 +31,7 @@ private:
 
     static Vec3f getReflectionDirection(const Vec3f &lightDir, const Vec3f &hitNormal);
 
-    static Vec3f getRefractionDirection(const Vec3f &lightDir, const Vec3f &hitNormal, const float refractive_index);
+    static Vec3f getRefractionDirection(const Vec3f &I, const Vec3f &N, float eta_t, float eta_i);
 };
 
 

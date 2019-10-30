@@ -56,11 +56,11 @@ int main(int argc, char* argv[]){
         std::cout << "num lights: " << scene->lightSources.size() << std::endl;
         std::cout << "num shapes: " << scene->shapes.size() << std::endl;
 
-        for(Shape *s : scene->shapes){
-            Sphere *sphere = (Sphere*) s;
-            std::cout << sphere->toString() << std::endl;
-            std::cout << ((BlinnPhong*)sphere->getMaterial())->getDiffuseColour() << std::endl;
-        }
+//        for(Shape *s : scene->shapes){
+//            Sphere *sphere = (Sphere*) s;
+//            std::cout << sphere->toString() << std::endl;
+//            std::cout << ((BlinnPhong*)sphere->getMaterial())->getDiffuseColour() << std::endl;
+//        }
     }
 
 
