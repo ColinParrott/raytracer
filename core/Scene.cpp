@@ -57,7 +57,7 @@ namespace rt {
 
             // Get closest object that the ray hits
             if (h.collided) {
-                double distance = (h.point - ray.origin).length();
+                double distance = (h.point - ray.origin).norm();
                 if (distance < hitDistance) {
                     hitDistance = distance;
                     hit = h;
