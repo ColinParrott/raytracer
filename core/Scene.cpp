@@ -70,6 +70,12 @@ namespace rt {
         return hit;
     }
 
+    /**
+     * Unused intersect function that ignores rays hitting a paritcular shape
+     * @param ray Ray cast
+     * @param shape Shape to ignore
+     * @return Hit object for ray
+     */
     Hit Scene::intersectIgnoreShape(Ray ray, Shape *shape){
         Hit hit;
         hit.collided = false;

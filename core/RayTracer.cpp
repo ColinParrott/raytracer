@@ -4,6 +4,7 @@
  */
 #include <shapes/Sphere.h>
 #include <materials/BlinnPhong.h>
+#include <chrono>
 #include "RayTracer.h"
 
 
@@ -22,6 +23,9 @@ namespace rt {
 
         Vec3f *pixelbuffer = new Vec3f[camera->getWidth() * camera->getHeight()];
         float fov_radians = camera->getFov() * (M_PI / 180);
+        auto start = std::chrono::system_clock::now();
+
+//#pragma omp parallel for
         for (unsigned y = 0; y < camera->getHeight(); y++) {
             for (unsigned x = 0; x < camera->getWidth(); x++) {
                 float dirX = (x + 0.5) - camera->getWidth() / 2;
@@ -33,16 +37,20 @@ namespace rt {
             }
         }
 
+        auto end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+        std::cout << "finished computation at " << std::ctime(&end_time)
+                  << "elapsed time: " << elapsed_seconds.count() << "s\n";
         return pixelbuffer;
     }
 
     inline
-    float clamp(const float &lo, const float &hi, const float &v)
-    { return std::max(lo, std::min(hi, v)); }
+    float clamp(const float &lo, const float &hi, const float &v) { return std::max(lo, std::min(hi, v)); }
 
     inline
-    float fresnel(const Vec3f &I, const Vec3f &N, const float &ior)
-    {
+    float fresnel(const Vec3f &I, const Vec3f &N, const float &ior) {
         float kr;
         float cosi = clamp(-1, 1, I.dotProduct(N));
         float etai = 1, etat = ior;
@@ -52,8 +60,7 @@ namespace rt {
         // Total internal reflection
         if (sint >= 1) {
             kr = 1;
-        }
-        else {
+        } else {
             float cost = sqrtf(std::max(0.f, 1 - sint * sint));
             cosi = fabsf(cosi);
             float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
@@ -92,11 +99,12 @@ namespace rt {
             Vec3f norm = hit.normal;
 
             // Fix for shadow acne/self occlusion
-            Vec3f shadowOrigin = lightDir.dotProduct(norm) < 0 ? hit.point - norm*1e-3 : hit.point + norm*1e-3;
+            Vec3f shadowOrigin = lightDir.dotProduct(norm) < 0 ? hit.point - norm * 1e-3 : hit.point + norm * 1e-3;
 
             // If shadow ray hit an object, skip adding this light source's contribution to the final colour
             Hit shadowHit = scene->intersect(Ray(shadowOrigin, lightDir, SHADOW));
-            if (shadowHit.collided && (shadowHit.point - shadowOrigin).norm() < (lightSource->position - hit.point).norm())
+            if (shadowHit.collided &&
+                (shadowHit.point - shadowOrigin).norm() < (lightSource->position - hit.point).norm())
                 continue;
 
 
@@ -104,13 +112,15 @@ namespace rt {
             float diffuseDot = lightDir.dotProduct(norm);
             if (diffuseDot > 0) {
                 // Add diffuse
-                iDiffuse = mat->getKd() * std::max(diffuseDot, 0.0f) * lightSource->diffuseIntensity * mat->getDiffuseColour();
+                iDiffuse = mat->getKd() * std::max(diffuseDot, 0.0f) * lightSource->diffuseIntensity *
+                           mat->getDiffuseColour();
 
                 // Add specular
                 Vec3f viewDir = (origin - hit.point).normalize();
                 Vec3f lightReflectDir = RayTracer::getReflectionDirection(-lightDir, norm).normalize();
                 float specDot = std::max(lightReflectDir.dotProduct(viewDir), 0.0f);
-                iSpecular = mat->getKs() * std::pow(specDot, mat->getSpecularExponent()) * lightSource->specIntensity *lightSource->colour;
+                iSpecular = mat->getKs() * std::pow(specDot, mat->getSpecularExponent()) * lightSource->specIntensity *
+                            lightSource->colour;
             }
 
         }
@@ -118,20 +128,31 @@ namespace rt {
         Vec3f reflectColour = Vec3f();
         Vec3f refractColour = Vec3f();
 
-        if(mat->getReflectivity() > 0.01f){
+        // Add reflection colour if material has it
+        if (mat->getReflectivity() > 0.01f) {
             Vec3f reflectDir = RayTracer::getReflectionDirection(dir, hit.normal).normalize();
-            Vec3f reflectOrig = reflectDir.dotProduct(hit.normal) < 0 ? hit.point - hit.normal*1e-3 : hit.point + hit.normal *1e-3;
+            Vec3f reflectOrig = reflectDir.dotProduct(hit.normal) < 0 ? hit.point - hit.normal * 1e-3 : hit.point +
+                                                                                                        hit.normal *
+                                                                                                        1e-3;
             reflectColour = castRay(reflectOrig, reflectDir, scene, nbounces, depth + 1, SECONDARY);
         }
 
-        if(mat->getTransparency() > 0.01f){
-            Vec3f refractDir = RayTracer::getRefractionDirection(dir, hit.normal, mat->getRefractiveIndex(), 1.0f).normalize();
-            Vec3f refractOrig = refractDir.dotProduct(hit.normal) < 0 ? hit.point - hit.normal*1e-3 : hit.point + hit.normal *1e-3;
+        // Add transparency colour if material has it
+        if (mat->getTransparency() > 0.01f) {
+            Vec3f refractDir = RayTracer::getRefractionDirection(dir, hit.normal, mat->getRefractiveIndex(),
+                                                                 1.0f).normalize();
+            Vec3f refractOrig = refractDir.dotProduct(hit.normal) < 0 ? hit.point - hit.normal * 1e-3 : hit.point +
+                                                                                                        hit.normal *
+                                                                                                        1e-3;
             refractColour = castRay(refractOrig, refractDir, scene, nbounces, depth + 1, SECONDARY);
         }
 
+        // Use fresnel equation to mix of refraction and reflection
         float kr = fresnel(dir, hit.normal, mat->getRefractiveIndex());
-        return iAmbient + iDiffuse + iSpecular + (reflectColour * mat->getReflectivity() * kr) + (refractColour * mat->getTransparency() * (1-kr));
+
+        // Combine all components
+        return iAmbient + iDiffuse + iSpecular + (reflectColour * mat->getReflectivity() * kr) +
+               (refractColour * mat->getTransparency() * (1 - kr));
     }
 
 
@@ -145,14 +166,14 @@ namespace rt {
         return lightDir - (2.0f * lightDir.dotProduct(hitNormal) * hitNormal);
     }
 
-    Vec3f RayTracer::getRefractionDirection(const Vec3f &I, const Vec3f &N, float eta_t, float eta_i=1.f){
-        float cosi = - std::max(-1.f, std::min(1.f, I.dotProduct(N)));
-        if (cosi<0){
+    Vec3f RayTracer::getRefractionDirection(const Vec3f &I, const Vec3f &N, float eta_t, float eta_i = 1.f) {
+        float cosi = -std::max(-1.f, std::min(1.f, I.dotProduct(N)));
+        if (cosi < 0) {
             return RayTracer::getRefractionDirection(I, -N, eta_i, eta_t);
         }
         float eta = eta_i / eta_t;
-        float k = 1 - eta*eta*(1 - cosi*cosi);
-        return k<0 ? Vec3f(0,0,0) : I*eta + N*(eta*cosi - sqrtf(k)); // k<0 = total internal reflection
+        float k = 1 - eta * eta * (1 - cosi * cosi);
+        return k < 0 ? Vec3f(0, 0, 0) : I * eta + N * (eta * cosi - sqrtf(k)); // k<0 = total internal reflection
     }
 
 /**
